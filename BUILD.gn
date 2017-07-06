@@ -1,0 +1,389 @@
+declare_args() {
+  libtorrent_shared = false
+  libtorrent_export_extras = false
+  libtorrent_enable_i2p = false
+  libtorrent_use_iconv = false
+  libtorrent_asserts = false
+  libtorrent_enable_extensions = true
+  libtorrent_debug_asio = false
+  libtorrent_debug_picker = false
+  libtorrent_use_simulator = false
+  libtorrent_piece_allocator = "valloc"
+  libtorrent_invariant_checks = false
+  libtorrent_enable_utp_log = false
+  libtorrent_simulate_slow_read = false
+  libtorrent_enable_logging = false
+  libtorrent_enable_dht = true
+  libtorrent_enable_encryption = true
+  libtorrent_enable_mutable_torrents = true
+  libtorrent_crypto = "built-in"
+  libtorrent_ssl = false
+  libtorrent_charset = "unicode"
+  libtorrent_enable_deprecated = false
+  libtorrent_profile_calls = false
+}
+
+config("libtorrent_config") {
+  defines = []
+  include_dirs = [ "include" ]
+
+  if (libtorrent_shared) {
+    defines += [ "TORRENT_LINKING_SHARED" ]
+  }
+
+  if (libtorrent_export_extras) {
+    defines += [ "TORRENT_EXPORT_EXTRA" ]
+  }
+
+  if (libtorrent_enable_i2p) {
+    defines += [ "TORRENT_USE_I2P=1" ]
+  } else {
+    defines += [ "TORRENT_USE_I2P=0" ]
+  }
+
+  if (libtorrent_use_iconv) {
+    defines += [ "TORRENT_USE_ICONV=1" ]
+  } else {
+    defines += [ "TORRENT_USE_ICONV=0" ]
+  }
+
+  if (libtorrent_asserts == "production") {
+    defines += [
+      "TORRENT_USE_ASSERTS=1",
+      "TORRENT_PRODUCTION_ASSERTS=1",
+    ]
+  } else if (libtorrent_asserts == "system") {
+    defines += [
+      "TORRENT_USE_ASSERTS=1",
+      "TORRENT_USE_SYSTEM_ASSERTS=1",
+    ]
+  } else if (libtorrent_asserts) {
+    defines += [ "TORRENT_USE_ASSERTS=1" ]
+  }
+
+  if (!libtorrent_enable_extensions) {
+    defines += [ "TORRENT_DISABLE_EXTENSIONS" ]
+  }
+
+  if (libtorrent_debug_asio) {
+    defines += [ "TORRENT_ASIO_DEBUGGING" ]
+  }
+
+  if (libtorrent_debug_picker) {
+    defines += [ "TORRENT_DEBUG_REFCOUNTS" ]
+  }
+
+  if (libtorrent_use_simulator) {
+    defines += [ "TORRENT_BUILD_SIMULATOR" ]
+  }
+
+  if (libtorrent_piece_allocator == "memalign") {
+    defines += [ "TORRENT_USE_MEMALIGN=1" ]
+  } else if (libtorrent_piece_allocator == "posix_memalign") {
+    defines += [ "TORRENT_USE_POSIX_MEMALIGN=1" ]
+  }
+
+  if (libtorrent_invariant_checks == "full") {
+    defines += [
+      "TORRENT_USE_INVARIANT_CHECKS=1",
+      "TORRENT_EXPENSIVE_INVARIANT_CHECKS",
+    ]
+  } else if (libtorrent_invariant_checks) {
+    defines += [ "TORRENT_USE_INVARIANT_CHECKS=1" ]
+  }
+
+  if (libtorrent_enable_utp_log) {
+    defines += [ "TORRENT_UTP_LOG_ENABLE" ]
+  }
+
+  if (libtorrent_simulate_slow_read) {
+    defines += [ "TORRENT_SIMULATE_SLOW_READ" ]
+  }
+
+  if (!libtorrent_enable_logging) {
+    defines += [ "TORRENT_DISABLE_LOGGING" ]
+  }
+
+  if (!libtorrent_enable_dht) {
+    defines += [ "TORRENT_DISABLE_DHT" ]
+  }
+
+  if (!libtorrent_enable_encryption) {
+    defines += [ "TORRENT_DISABLE_ENCRYPTION" ]
+  }
+
+  if (!libtorrent_enable_mutable_torrents) {
+    defines += [ "TORRENT_DISABLE_MUTABLE_TORRENTS" ]
+  }
+
+  if (libtorrent_crypto == "libcrypto") {
+    defines += [ "TORRENT_USE_LIBCRYPTO" ]
+  } else if (libtorrent_crypto == "libgcrypt") {
+    defines += [ "TORRENT_USE_LIBGCRYPT" ]
+  }
+
+  if (libtorrent_ssl == "openssl") {
+    defines += [
+      "TORRENT_USE_OPENSSL",
+      "OPENSSL_NO_SSL2",
+    ]
+  }
+
+  if (libtorrent_charset == "unicode") {
+    defines += [
+      "_UNICODE",
+      "UNICODE",
+    ]
+  }
+
+  if (!libtorrent_enable_deprecated) {
+    defines += [ "TORRENT_NO_DEPRECATE" ]
+  }
+
+  if (libtorrent_profile_calls) {
+    defines += [ "TORRENT_PROFILE_CALLS=1" ]
+  }
+}
+
+config("internal") {
+  visibility = [ ":*" ]
+  defines = [ "TORRENT_BUILDING_LIBRARY" ]
+
+  if (libtorrent_shared) {
+    defines += [ "TORRENT_BUILDING_SHARED" ]
+  }
+}
+
+static_library("kademlia") {
+  sources = [
+    "src/kademlia/dht_settings.cpp",
+    "src/kademlia/dht_state.cpp",
+    "src/kademlia/dht_storage.cpp",
+    "src/kademlia/dht_tracker.cpp",
+    "src/kademlia/dos_blocker.cpp",
+    "src/kademlia/ed25519.cpp",
+    "src/kademlia/find_data.cpp",
+    "src/kademlia/get_item.cpp",
+    "src/kademlia/get_peers.cpp",
+    "src/kademlia/item.cpp",
+    "src/kademlia/msg.cpp",
+    "src/kademlia/node.cpp",
+    "src/kademlia/node_entry.cpp",
+    "src/kademlia/node_id.cpp",
+    "src/kademlia/put_data.cpp",
+    "src/kademlia/refresh.cpp",
+    "src/kademlia/routing_table.cpp",
+    "src/kademlia/rpc_manager.cpp",
+    "src/kademlia/sample_infohashes.cpp",
+    "src/kademlia/traversal_algorithm.cpp",
+  ]
+
+  public_configs = [ ":libtorrent_config" ]
+  public_deps = [
+    "$external/boost/libs/asio",
+    "$external/boost/libs/system",
+  ]
+}
+
+static_library("ed25519") {
+  sources = [
+    "ed25519/src/add_scalar.cpp",
+    "ed25519/src/fe.cpp",
+    "ed25519/src/ge.cpp",
+    "ed25519/src/key_exchange.cpp",
+    "ed25519/src/keypair.cpp",
+    "ed25519/src/sc.cpp",
+    "ed25519/src/sign.cpp",
+    "ed25519/src/verify.cpp",
+  ]
+
+  public_configs = [ ":libtorrent_config" ]
+  public_deps = [
+    "$external/boost/libs/asio",
+    "$external/boost/libs/system",
+  ]
+}
+
+if (libtorrent_shared) {
+  _target_type = "shared_library"
+} else {
+  _target_type = "static_library"
+}
+
+target(_target_type, "libtorrent") {
+  sources = [
+    "src/ConvertUTF.cpp",
+    "src/add_torrent_params.cpp",
+    "src/alert.cpp",
+    "src/alert_manager.cpp",
+    "src/allocator.cpp",
+    "src/announce_entry.cpp",
+    "src/assert.cpp",
+    "src/bandwidth_limit.cpp",
+    "src/bandwidth_manager.cpp",
+    "src/bandwidth_queue_entry.cpp",
+    "src/bdecode.cpp",
+    "src/bitfield.cpp",
+    "src/block_cache.cpp",
+    "src/bloom_filter.cpp",
+    "src/broadcast_socket.cpp",
+    "src/bt_peer_connection.cpp",
+    "src/chained_buffer.cpp",
+    "src/choker.cpp",
+    "src/close_reason.cpp",
+    "src/cpuid.cpp",
+    "src/crc32c.cpp",
+    "src/create_torrent.cpp",
+    "src/disk_buffer_holder.cpp",
+    "src/disk_buffer_pool.cpp",
+    "src/disk_io_job.cpp",
+    "src/disk_io_thread.cpp",
+    "src/disk_io_thread_pool.cpp",
+    "src/disk_job_fence.cpp",
+    "src/disk_job_pool.cpp",
+    "src/entry.cpp",
+    "src/enum_net.cpp",
+    "src/error_code.cpp",
+    "src/escape_string.cpp",
+    "src/ffs.cpp",
+    "src/file.cpp",
+    "src/file_pool.cpp",
+    "src/file_progress.cpp",
+    "src/file_storage.cpp",
+    "src/fingerprint.cpp",
+    "src/gzip.cpp",
+    "src/hasher.cpp",
+    "src/hex.cpp",
+    "src/http_connection.cpp",
+    "src/http_parser.cpp",
+    "src/http_seed_connection.cpp",
+    "src/http_stream.cpp",
+    "src/http_tracker_connection.cpp",
+    "src/i2p_stream.cpp",
+    "src/identify_client.cpp",
+    "src/instantiate_connection.cpp",
+    "src/ip_filter.cpp",
+    "src/ip_notifier.cpp",
+    "src/ip_voter.cpp",
+    "src/listen_socket_handle.cpp",
+    "src/lsd.cpp",
+    "src/magnet_uri.cpp",
+    "src/merkle.cpp",
+    "src/natpmp.cpp",
+    "src/packet_buffer.cpp",
+    "src/parse_url.cpp",
+    "src/part_file.cpp",
+    "src/path.cpp",
+    "src/peer_class.cpp",
+    "src/peer_class_set.cpp",
+    "src/peer_connection.cpp",
+    "src/peer_connection_handle.cpp",
+    "src/peer_info.cpp",
+    "src/peer_list.cpp",
+    "src/performance_counters.cpp",
+    "src/piece_picker.cpp",
+    "src/platform_util.cpp",
+    "src/proxy_base.cpp",
+    "src/proxy_settings.cpp",
+    "src/puff.cpp",
+    "src/random.cpp",
+    "src/read_resume_data.cpp",
+    "src/receive_buffer.cpp",
+    "src/request_blocks.cpp",
+    "src/resolve_links.cpp",
+    "src/resolver.cpp",
+    "src/session.cpp",
+    "src/session_call.cpp",
+    "src/session_handle.cpp",
+    "src/session_impl.cpp",
+    "src/session_settings.cpp",
+    "src/session_stats.cpp",
+    "src/session_udp_sockets.cpp",
+    "src/settings_pack.cpp",
+    "src/sha1_hash.cpp",
+    "src/socket_io.cpp",
+    "src/socket_type.cpp",
+    "src/socks5_stream.cpp",
+    "src/stack_allocator.cpp",
+    "src/stat.cpp",
+    "src/stat_cache.cpp",
+    "src/storage.cpp",
+    "src/storage_piece_set.cpp",
+    "src/storage_utils.cpp",
+    "src/string_util.cpp",
+    "src/time.cpp",
+    "src/timestamp_history.cpp",
+    "src/torrent.cpp",
+    "src/torrent_handle.cpp",
+    "src/torrent_info.cpp",
+    "src/torrent_peer.cpp",
+    "src/torrent_peer_allocator.cpp",
+    "src/torrent_status.cpp",
+    "src/tracker_manager.cpp",
+    "src/udp_socket.cpp",
+    "src/udp_tracker_connection.cpp",
+    "src/upnp.cpp",
+    "src/utf8.cpp",
+    "src/utp_socket_manager.cpp",
+    "src/utp_stream.cpp",
+    "src/version.cpp",
+    "src/web_connection_base.cpp",
+    "src/web_peer_connection.cpp",
+    "src/write_resume_data.cpp",
+    "src/xml_parse.cpp",
+
+    # -- extensions --
+    "src/smart_ban.cpp",
+    "src/ut_metadata.cpp",
+    "src/ut_pex.cpp",
+  ]
+
+  if (libtorrent_enable_dht) {
+    sources += [ "src/hasher512.cpp" ]
+  }
+
+  if (!libtorrent_enable_deprecated) {
+    sources += [ "src/lazy_bdecode.cpp" ]
+  }
+
+  if (libtorrent_asserts == "production" || libtorrent_asserts) {
+    sources += [ "src/asserts.cpp" ]
+  }
+
+  if (libtorrent_enable_encryption) {
+    sources += [ "src/pe_crypto.cpp" ]
+  }
+
+  if (libtorrent_crypto == "built-in" && !is_win && !is_mac) {
+    sources += [ "src/sha1.cpp" ]
+    if (libtorrent_enable_dht) {
+      sources += [ "src/sha512.cpp" ]
+    }
+  }
+
+  configs += [ ":internal" ]
+
+  if (is_win) {
+    libs = [
+      "ws2_32.lib",
+      "wsock32.lib",
+      "iphlpapi.lib",
+    ]
+    if (libtorrent_enable_dht) {
+      libs += [ "advapi32.lib" ]
+    }
+  }
+
+  public_configs = [ ":libtorrent_config" ]
+  public_deps = [
+    "$external/boost/libs/asio",
+    "$external/boost/libs/system",
+  ]
+
+  if (libtorrent_enable_dht) {
+    deps = [
+      ":ed25519",
+      ":kademlia",
+    ]
+  }
+}

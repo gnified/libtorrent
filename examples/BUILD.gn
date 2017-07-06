@@ -1,0 +1,35 @@
+executable("client_test") {
+  sources = [
+    "client_test.cpp",
+    "print.cpp",
+    "print.hpp",
+    "session_view.cpp",
+    "session_view.hpp",
+    "torrent_view.cpp",
+    "torrent_view.hpp",
+  ]
+
+  deps = [
+    "..:libtorrent",
+  ]
+}
+
+executable("make_torrent") {
+  sources = [
+    "make_torrent.cpp",
+  ]
+
+  deps = [
+    "..:libtorrent",
+  ]
+}
+
+executable("dump_torrent") {
+  sources = [
+    "dump_torrent.cpp",
+  ]
+
+  deps = [
+    "..:libtorrent",
+  ]
+}
